@@ -66,13 +66,15 @@ class special:
                 <=int(self.tokens[_count])
 
     def evolve(self):
-        self.tokens = {tk:self.evolution_map[tk](self.tokens)
+        tokens = {tk:self.evolution_map[tk](self.tokens)
                 if tk in self.evolution_map else self.tokens[tk]
                 for tk in self.tokens}
+        return special(tokens, self.token_map, self.evolution_map, self.print_map, False)
 
     def print(self):
+        from . import io
         tmp = [self.print_map[tk](self.tokens) for tk in self.tokens]
-        return [st for st in tmp if st != '']
+        return io._concat([st for st in tmp if st != ''])
 
     def to_list(self):
         result = []

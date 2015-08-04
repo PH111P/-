@@ -18,6 +18,8 @@ def _dtfa(a):
 def _int(lst):
     return [int(a) for a in lst]
 def _concat(a):
+    if len(a) == 0:
+        return ''
     result = a[0]
     for i in range(1,len(a)):
         result += ' ' + a[i]
@@ -54,7 +56,7 @@ def read_appoints(path,
     return [appoint.appoint(
         start=_dtfa(_int(lines[4*i])),
         end=_dtfa(_int(lines[4*i+1])),
-        inc=_int(lines[4*i+2][0:3]),
+        inc=_int(lines[4*i+2][0:4]),
         prio=int(lines[4*i+2][4]),
         text=_simplify(lines[4*i+3], token_map),
         spec=special.special(

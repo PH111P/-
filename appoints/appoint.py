@@ -1,7 +1,7 @@
-def _calc_td(a):
+def _calc_td(start, inc):
     from datetime import datetime, timedelta, time
-    return (datetime(a[0].year+a[4][0], a[0].month, a[0].day, a[0].hour,
-        a[0].minute)-a[0])+timedelta(a[4][1], 3600*a[4][2]+60*a[4][3])
+    return (datetime(start.year+inc[0], start.month, start.day, start.hour,
+        start.minute)-start)+timedelta(inc[1], 3600*inc[2]+60*inc[3])
 
 class appoint:
     from datetime import datetime, timedelta, time
@@ -33,12 +33,13 @@ class appoint:
 
     def evolve(self):
         """Generate the next occurence or None if there's none"""
-        if not spec.has_next() or _calc_td(self.inc) == timedelta():
+        from datetime import timedelta
+        if not self.spec.has_next() or _calc_td(self.start, self.inc) == timedelta():
             return None
-        self.spec.evolve()
-        self.start = self.start + _calc_td(self.inc)
-        self.end = self.end + _calc_td(self.inc)
-        return self
+        spec = self.spec.evolve()
+        start = self.start + _calc_td(self.start, self.inc)
+        end = self.end + _calc_td(self.start, self.inc)
+        return appoint(start, end, self.prio, self.inc, self.text, spec)
 
     def to_tuple(self, curr_date):
         """Generate a tuple (start minute, end minute, prio, spec) \
