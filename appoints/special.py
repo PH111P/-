@@ -14,7 +14,7 @@ def _evolve_number(tokens):
     stp = 1
     if _step in tokens:
         stp = int(tokens[_step])
-    return curr_val + stp
+    return str(curr_val + stp)
 _evolution_map = {_number:_evolve_number}
 
 #Some functions for printing stuff
@@ -43,8 +43,9 @@ class special:
             token_map=_token_map,
             evolution_map=_evolution_map,
             print_map=_print_map,
-            auto_add_tokens=True):
-        if auto_add_tokens:
+            auto_add_maps=True,
+            use_token_map=True):
+        if auto_add_maps:
             self.evolution_map = _replace_entries(_evolution_map,\
                     evolution_map)
             self.token_map = _replace_entries(_token_map, token_map)
@@ -53,23 +54,30 @@ class special:
             self.evolution_map = evolution_map
             self.token_map = token_map
             self.print_map = print_map
-
-        self.tokens = {self.token_map[tk]:tokens[tk] for tk in tokens
-                        if tk in self.token_map}
+        if use_token_map:
+            self.tokens = {self.token_map[tk]:tokens[tk] for tk in tokens
+                    if tk in self.token_map}
+        else:
+            self.tokens = tokens
 
     def has_next(self):
         if not _count in self.tokens or not _number in self.tokens:
             return True
         if not _number in self.evolution_map:
             return True
-        return self.evolution_map[_number](self.tokens) \
+        return int(self.evolution_map[_number](self.tokens)) \
                 <=int(self.tokens[_count])
 
     def evolve(self):
         tokens = {tk:self.evolution_map[tk](self.tokens)
                 if tk in self.evolution_map else self.tokens[tk]
                 for tk in self.tokens}
-        return special(tokens, self.token_map, self.evolution_map, self.print_map, False)
+        return special(tokens,
+                self.token_map,
+                self.evolution_map,
+                self.print_map,
+                False,
+                False)
 
     def print(self):
         from . import io

@@ -35,7 +35,7 @@ def read_appoints(path,
         token_map={},
         evolution_map={},
         print_map={},
-        auto_add_tokens=True):
+        auto_add_maps=True):
     import os, io
     from datetime import datetime
     from . import appoint, special
@@ -50,7 +50,7 @@ def read_appoints(path,
     f.close()
 
     #Add missing default tokens
-    if auto_add_tokens:
+    if auto_add_maps:
         token_map = special._replace_entries(special._token_map, token_map)
 
     return [appoint.appoint(
@@ -64,7 +64,7 @@ def read_appoints(path,
             token_map=token_map,
             evolution_map=evolution_map,
             print_map=print_map,
-            auto_add_tokens=auto_add_tokens
+            auto_add_maps=auto_add_maps
             )
         ) for i in range(0, int(len(lines)/4))]
 
