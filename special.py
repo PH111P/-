@@ -42,10 +42,18 @@ class special:
     def __init__(self, tokens,
             token_map=_token_map,
             evolution_map=_evolution_map,
-            print_map=_print_map):
-        self.evolution_map = _replace_entries(_evolution_map, evolution_map)
-        self.token_map = _replace_entries(_token_map, token_map)
-        self.print_map = _replace_entries(_print_map, print_map)
+            print_map=_print_map,
+            auto_add_tokens=True):
+        if auto_add_tokens:
+            self.evolution_map = _replace_entries(_evolution_map,\
+                    evolution_map)
+            self.token_map = _replace_entries(_token_map, token_map)
+            self.print_map = _replace_entries(_print_map, print_map)
+        else:
+            self.evolution_map = evolution_map
+            self.token_map = token_map
+            self.print_map = print_map
+
         self.tokens = {self.token_map[tk]:tokens[tk] for tk in tokens
                         if tk in self.token_map}
 
@@ -65,3 +73,12 @@ class special:
     def print(self):
         tmp = [self.print_map[tk](self.tokens) for tk in self.tokens]
         return [st for st in tmp if st != '']
+
+    def to_list(self):
+        result = []
+        for tk in self.tokens:
+            tmp = [t for t in self.token_map if
+                    self.token_map[t]==tk][0]
+            tmp += self.tokens[tk]
+            result += [tmp]
+        return result

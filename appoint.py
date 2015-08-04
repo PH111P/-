@@ -1,7 +1,11 @@
-from datetime import datetime, timedelta, time
-from . import special
+def _calc_td(a):
+    from datetime import datetime, timedelta, time
+    return (datetime(a[0].year+a[4][0], a[0].month, a[0].day, a[0].hour,
+        a[0].minute)-a[0])+timedelta(a[4][1], 3600*a[4][2]+60*a[4][3])
 
 class appoint:
+    from datetime import datetime, timedelta, time
+    from . import special
     start = None
     end = None
     inc = None
@@ -20,20 +24,20 @@ class appoint:
     def is_present(self, curr_time):
         return self.start <= curr_time and curr_time <= self.end
     def is_past(self, curr_time):
-        return self.end <= curr_time
+        return self.end < curr_time
     def is_future(self, curr_time):
-        return curr_time <= self.start
+        return curr_time < self.start
 
     def is_near(self, curr_time, time_eps):
-        return self.start <= curr_time + time_eps
+        return curr_time < self.start and self.start <= curr_time + time_eps
 
     def evolve(self):
         """Generate the next occurence or None if there's none"""
-        if not spec.has_next() or self.inc == timedelta():
+        if not spec.has_next() or _calc_td(self.inc) == timedelta():
             return None
         self.spec.evolve()
-        self.start = self.start + self.inc
-        self.end = self.end + self.inc
+        self.start = self.start + _calc_td(self.inc)
+        self.end = self.end + _calc_td(self.inc)
         return self
 
     def to_tuple(self, curr_date):
