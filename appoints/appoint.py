@@ -31,6 +31,10 @@ class appoint:
     def is_near(self, curr_time, time_eps):
         return curr_time < self.start and self.start <= curr_time + time_eps
 
+    def is_present_on_day(self, date):
+        return self.start.date() <= date.date()\
+                and date.date() <= self.end.date()
+
     def evolve(self):
         """Generate the next occurence or None if there's none"""
         from datetime import timedelta
@@ -44,7 +48,7 @@ class appoint:
     def to_tuple(self, curr_date):
         """Generate a tuple (start minute, end minute, prio, spec) \
                 for a given date curr_date"""
-        if not self.is_present(curr_date):
+        if not self.is_present_on_day(curr_date):
             return None
         return (self.start.hour*60+self.start.minute if
                 self.start.date()==curr_date.date() else -1,
