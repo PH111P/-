@@ -91,8 +91,8 @@ def write_appoints(appoints, path, fail_if_locked=True):
     return True
 
 #Syncing stuff (TODO)
-def pull_appoints():
-    return None
+#def pull_appoints():
+#    return None
 
-def push_appoints():
-    return False
+#def push_appoints():
+#    return False
