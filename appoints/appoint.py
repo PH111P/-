@@ -3,6 +3,32 @@ def _calc_td(start, inc):
     return (datetime(start.year+inc[0], start.month, start.day, start.hour,
         start.minute)-start)+timedelta(inc[1], 3600*inc[2]+60*inc[3])
 
+def _enc_dt(dt):
+    import random
+    lns = dt.strftime('%Y %m %d %H %M').split()
+    res = lns[0]
+    for i in range(1, len(lns)):
+        res += str(random.randint(0,9)) + lns[i]
+    return res
+def _dec_dt(dt):
+    from datetime import datetime
+    return datetime(int(dt[0:4]),
+            int(dt[5:7]),
+            int(dt[8:10]),
+            int(dt[11:13]),
+            int(dt[14:16]))
+
+def _enc_inc(inc, prio):
+    import random
+    res = str(prio) + ' '
+    for i in inc:
+        res += str(i) + ' '
+    res += str(random.randint(1<<50,1<<128))[0:16-len(res)]
+    return res
+def _dec_inc(str):
+    tmp = str.split()
+    return ([int(tmp[i]) for i in [1, 2, 3, 4]], int(tmp[0]))
+
 class appoint:
     from datetime import datetime, timedelta, time
     from . import special
@@ -13,13 +39,20 @@ class appoint:
     text = None
     spec = None
 
-    def __init__(self, start, end, prio, inc, text, spec):
-        self.start = start
-        self.end = end
-        self.inc = inc
-        self.prio = prio
-        self.text = text
-        self.spec = spec
+    def __init__(self, start, end, prio, inc, text, spec, data=None):
+        if data == None:
+            self.start = start
+            self.end = end
+            self.inc = inc
+            self.prio = prio
+            self.text = text
+            self.spec = spec
+        else:
+            self.start = _dec_dt(data[0])
+            self.end = _dec_dt(data[1])
+            tm = _dec_inc(data[2])
+            self.inc = tm[0]
+            self.prio = tm[1]
 
     def is_present(self, curr_time):
         return self.start <= curr_time and curr_time <= self.end
@@ -38,7 +71,8 @@ class appoint:
     def evolve(self):
         """Generate the next occurence or None if there's none"""
         from datetime import timedelta
-        if not self.spec.has_next() or _calc_td(self.start, self.inc) == timedelta():
+        if not self.spec.has_next()\
+            or _calc_td(self.start, self.inc) == timedelta():
             return None
         spec = self.spec.evolve()
         start = self.start + _calc_td(self.start, self.inc)
@@ -57,4 +91,10 @@ class appoint:
                 self.end.time()==time(23,59) else 1500,
                 self.prio,
                 (self.text,self.spec))
+
+    def to_bytes(self):
+        res = [_enc_dt(self.start).encode(),
+                _enc_dt(self.end).encode(),
+                _enc_inc(self.inc, self.prio)[0:16].encode()]
+        return res
 

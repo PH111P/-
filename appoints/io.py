@@ -90,9 +90,57 @@ def write_appoints(appoints, path, fail_if_locked=True):
     f.close()
     return True
 
-#Syncing stuff (TODO)
-#def pull_appoints():
-#    return None
+#Syncing stuff
+def _bxor(b1, b2):
+    res = bytearray(b1)
+    for i, b in enumerate(b2):
+        res[i] ^= b
+    return bytes(res)
 
-#def push_appoints():
-#    return False
+#Use twofish as encryption algo
+def _enc_appoints(appoints, symmetric_key):
+    from twofish import Twofish as twofish
+    t = twofish(symmetric_key[0:32].encode())
+    dec_data = [ap.to_bytes() for ap in appoints]
+    enc_data = []
+    for dec in dec_data:
+        iv = ('\x00'*16).encode()
+        for i in range(0, len(dec)):
+            iv = _bxor(dec[i], iv)
+        cenc = [t.encrypt(iv)]
+        for i in range(1, len(dec)):
+            cenc = [t.encrypt(_bxor(cenc[0],dec[i]))] + cenc
+        cenc += [('\x00'*16).encode()]
+        enc_data += cenc
+    return enc_data
+def _dec_appoints(enc_data, symmetric_key):
+    from twofish import Twofish as twofish
+    from . import appoint
+    t = twofish(symmetric_key[0:32].encode())
+    appoints = []
+    tmp = []
+    for ln in enc_data:
+        if ln != ('\x00'*16).encode():
+            tmp += [ln]
+        else:
+            app = []
+            iv = ('\x00'*16).encode()
+            for i in range(0, len(tmp)-1):
+                app = [_bxor(tmp[i+1],t.decrypt(tmp[i]))] + app
+                iv = _bxor(iv, app[0])
+            app = [_bxor(iv, t.decrypt(tmp[len(tmp)-1]))] + app
+            appoints += [app]
+            tmp = []
+    return [appoint.appoint(0,0,0,0,0,0,data=ap) for ap in appoints]
+
+def pull_appoints(url, symmetric_key=None):
+    return None
+
+def push_appoints(appoints, url, symmetric_key=None):
+    enc_data = []
+    if symmetric_key != None:
+        enc_data = _enc_appoints(appoints, symmetric_key)
+    else:
+        for dec in [ap.to_bytes() for ap in appoints]:
+            enc_data += dec + [('\x00'*16).encode()]
+    return False
