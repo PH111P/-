@@ -29,6 +29,25 @@ def _dec_inc(str):
     tmp = str.split()
     return ([int(tmp[i]) for i in [1, 2, 3, 4]], int(tmp[0]))
 
+def _enc_text(text):
+    import random
+    cn = int(len(text)/9) + (len(text)%9 != 0)
+    res = []
+    for i in range(0, cn):
+        cl = min(9, len(text) - 9*i)
+        cs = text[9*i:9*i+cl]
+        cs += str(random.randint(1<<20, 1<<40))[0:15-cl]
+        cs += str(cl)
+        res += [cs.encode()]
+    return res
+def _dec_text(data):
+    return ''
+
+def _enc_spec(spec):
+    return ' '*16
+def _dec_spec(data):
+    return None
+
 class appoint:
     from datetime import datetime, timedelta, time
     from . import special
@@ -53,6 +72,17 @@ class appoint:
             tm = _dec_inc(data[2])
             self.inc = tm[0]
             self.prio = tm[1]
+            tm = []
+            i = 3
+            while data[i] != ('\x00'*16).encode():
+                tm += [data[i]]
+                i += 1
+            self.text = _dec_text(tm)
+            tm = []
+            while i < len(data):
+                tm += [data[i]]
+                i += 1
+            self.spec = _dec_spec(tm)
 
     def is_present(self, curr_time):
         return self.start <= curr_time and curr_time <= self.end
@@ -96,5 +126,8 @@ class appoint:
         res = [_enc_dt(self.start).encode(),
                 _enc_dt(self.end).encode(),
                 _enc_inc(self.inc, self.prio)[0:16].encode()]
+        res += _enc_text(self.text).encode()
+        res += ('\x00'*16).encode()
+        res += _enc_spec(self.spec)
         return res
 
