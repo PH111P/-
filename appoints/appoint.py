@@ -36,17 +36,31 @@ def _enc_text(text):
     for i in range(0, cn):
         cl = min(9, len(text) - 9*i)
         cs = text[9*i:9*i+cl]
-        cs += str(random.randint(1<<20, 1<<40))[0:15-cl]
+        cs += str(random.randint(1<<45, 1<<50))[0:15-cl]
         cs += str(cl)
         res += [cs.encode()]
     return res
 def _dec_text(data):
-    return ''
+    text = ''
+    for ln in data:
+        text += ln[0:int(ln.decode()[15])].decode()
+    return text
 
 def _enc_spec(spec):
-    return ' '*16
+    import pickle
+    data = pickle.dumps(spec)
+    cn = int(len(data)/16) + (len(data)%16 != 0)
+    res = []
+    for i in range(0, cn):
+        cl = min(16, len(data)-16*i)
+        res += [data[i*16:(i+1)*16]+(b' '*16)[0:16-cl]]
+    return res
 def _dec_spec(data):
-    return None
+    import pickle
+    str = data[0]
+    for i in range(1, len(data)):
+        str += data[i]
+    return pickle.loads(str)
 
 class appoint:
     from datetime import datetime, timedelta, time
@@ -79,6 +93,7 @@ class appoint:
                 i += 1
             self.text = _dec_text(tm)
             tm = []
+            i += 1
             while i < len(data):
                 tm += [data[i]]
                 i += 1
@@ -126,8 +141,8 @@ class appoint:
         res = [_enc_dt(self.start).encode(),
                 _enc_dt(self.end).encode(),
                 _enc_inc(self.inc, self.prio)[0:16].encode()]
-        res += _enc_text(self.text).encode()
-        res += ('\x00'*16).encode()
+        res += _enc_text(self.text)
+        res += [('\x00'*16).encode()]
         res += _enc_spec(self.spec)
         return res
 
