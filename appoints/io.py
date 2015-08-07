@@ -90,7 +90,7 @@ def write_appoints(appoints, path, fail_if_locked=True):
     f.close()
     return True
 
-#Syncing stuff
+#Encryption/ Decryption stuff
 def _bxor(b1, b2):
     res = bytearray(b1)
     for i, b in enumerate(b2):
@@ -98,7 +98,7 @@ def _bxor(b1, b2):
     return bytes(res)
 
 #Use twofish as encryption algo
-def _enc_appoints(appoints, symmetric_key):
+def enc_appoints(appoints, symmetric_key):
     from twofish import Twofish as twofish
     t = twofish(symmetric_key[0:32].encode())
     dec_data = [ap.to_bytes() for ap in appoints]
@@ -113,11 +113,17 @@ def _enc_appoints(appoints, symmetric_key):
         cenc += [('\x00'*16).encode()]
         enc_data += cenc
     return enc_data
-def _dec_appoints(enc_data, symmetric_key):
+def dec_appoints(enc_data,
+        symmetric_key,
+        token_map={},
+        evolution_map={},
+        print_map={},
+        auto_add_maps=True):
     from twofish import Twofish as twofish
-    from . import appoint
+    from . import appoint, special
     t = twofish(symmetric_key[0:32].encode())
     appoints = []
+    dec_apps = []
     tmp = []
     for ln in enc_data:
         if ln != ('\x00'*16).encode():
@@ -129,18 +135,33 @@ def _dec_appoints(enc_data, symmetric_key):
                 app = [_bxor(tmp[i+1],t.decrypt(tmp[i]))] + app
                 iv = _bxor(iv, app[0])
             app = [_bxor(iv, t.decrypt(tmp[len(tmp)-1]))] + app
-            appoints += [app]
+            dec_apps += [app]
             tmp = []
-    return [appoint.appoint(0,0,0,0,0,0,data=ap) for ap in appoints]
 
-def pull_appoints(url, symmetric_key=None):
-    return None
+    #Add missing default tokens
+    if auto_add_maps:
+        token_map = special._replace_entries(special._token_map, token_map)
 
-def push_appoints(appoints, url, symmetric_key=None):
-    enc_data = []
-    if symmetric_key != None:
-        enc_data = _enc_appoints(appoints, symmetric_key)
-    else:
-        for dec in [ap.to_bytes() for ap in appoints]:
-            enc_data += dec + [('\x00'*16).encode()]
-    return False
+    for ap in dec_apps:
+        start = appoint._dec_dt(ap[0])
+        end = appoint._dec_dt(ap[1])
+
+        tm = appoint._dec_inc(ap[2])
+        inc = tm[0]
+        prio = tm[1]
+        dec_txt = appoint._dec_text(ap[3:len(ap)-1])
+        appoints += [appoint.appoint(
+            start=start,
+            end=end,
+            inc=inc,
+            prio=prio,
+            text=_simplify(dec_txt.split(), token_map),
+            spec=special.special(
+                tokens=_extract_specials(dec_txt.split(), token_map),
+                token_map=token_map,
+                evolution_map=evolution_map,
+                print_map=print_map,
+                auto_add_maps=auto_add_maps
+            )
+        )]
+    return appoints

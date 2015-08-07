@@ -46,22 +46,6 @@ def _dec_text(data):
         text += ln[0:int(ln.decode()[15])].decode()
     return text
 
-def _enc_spec(spec):
-    import pickle
-    data = pickle.dumps(spec)
-    cn = int(len(data)/16) + (len(data)%16 != 0)
-    res = []
-    for i in range(0, cn):
-        cl = min(16, len(data)-16*i)
-        res += [data[i*16:(i+1)*16]+(b' '*16)[0:16-cl]]
-    return res
-def _dec_spec(data):
-    import pickle
-    str = data[0]
-    for i in range(1, len(data)):
-        str += data[i]
-    return pickle.loads(str)
-
 class appoint:
     from datetime import datetime, timedelta, time
     from . import special
@@ -72,32 +56,13 @@ class appoint:
     text = None
     spec = None
 
-    def __init__(self, start, end, prio, inc, text, spec, data=None):
-        if data == None:
-            self.start = start
-            self.end = end
-            self.inc = inc
-            self.prio = prio
-            self.text = text
-            self.spec = spec
-        else:
-            self.start = _dec_dt(data[0])
-            self.end = _dec_dt(data[1])
-            tm = _dec_inc(data[2])
-            self.inc = tm[0]
-            self.prio = tm[1]
-            tm = []
-            i = 3
-            while data[i] != ('\x00'*16).encode():
-                tm += [data[i]]
-                i += 1
-            self.text = _dec_text(tm)
-            tm = []
-            i += 1
-            while i < len(data):
-                tm += [data[i]]
-                i += 1
-            self.spec = _dec_spec(tm)
+    def __init__(self, start, end, prio, inc, text, spec):
+        self.start = start
+        self.end = end
+        self.inc = inc
+        self.prio = prio
+        self.text = text
+        self.spec = spec
 
     def is_present(self, curr_time):
         return self.start <= curr_time and curr_time <= self.end
@@ -138,11 +103,11 @@ class appoint:
                 (self.text,self.spec))
 
     def to_bytes(self):
+        from . import io
         res = [_enc_dt(self.start).encode(),
                 _enc_dt(self.end).encode(),
                 _enc_inc(self.inc, self.prio)[0:16].encode()]
-        res += _enc_text(self.text)
+        res += _enc_text(self.text+' '+io._concat(self.spec.to_list()))
         res += [('\x00'*16).encode()]
-        res += _enc_spec(self.spec)
         return res
 

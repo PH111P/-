@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='appoints',
-        version='1.1a2',
+        version='1.1b1',
         description='A Library for managing appointments',
         author='Philip Wellnitz',
         author_email='philipwellnitz@gmx.de',
