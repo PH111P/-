@@ -98,4 +98,48 @@ Examples can be found in the `examples` folder.
 ###Input/ Output
 Input and output routines are implemented in the file `io.py`.
 ####File IO
+The functions `read_appoints` and `write_appoints` will read/ write files,
+whereby each appointment consists of 4 lines:
+```
+yyyy mm dd HH MM        #Start Date
+yyyy mm dd HH MM        #End Date
+y d h m prio            #Inc and priority
+subject                 #String containing the subject and specials
+```
 
+For example, a file might look like:
+```
+2015 12 31 00 00
+2015 12 31 23 59
+1 0 0 0 0
+New Year's Eve
+
+2016 01 01 00 00
+2016 01 01 23 59
+1 0 0 0 0
+New Year's Day
+
+2016 06 28 00 00
+2016 06 28 23 59
+1 0 0 0 5
+Tau Day
+
+2015 01 01 00 00
+2015 01 01 23 59
+0 3 0 0 0
+Days since 2015-01-01: #0 $3
+
+2015 09 25 16 00
+2015 09 25 18 00
+0 0 0 0 3
+Some appointment @Somewhere 
+```
+
+###Installation
+```
+pip install appoints
+```
+
+###Examples
+Currently, the following examples can be examined:
+* `appoints-term.py` — Shows upcoming appointments in a terminal using fancy ANSI escapes 
