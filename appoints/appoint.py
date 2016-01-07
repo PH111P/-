@@ -4,8 +4,6 @@ def _calc_td(start, inc):
         start.minute)-start)+timedelta(inc[1], 3600*inc[2]+60*inc[3])
 
 class appoint:
-    from datetime import datetime, timedelta, time
-    from . import special
     start = None
     end = None
     inc = None
@@ -46,6 +44,8 @@ class appoint:
         return appoint(start, end, self.prio, self.inc, self.text, spec)
 
     def to_tuple(self, curr_date):
+        from datetime import datetime, timedelta, time
+        from . import special
         """Generate a tuple (start minute, end minute, prio, spec) \
                 for a given date curr_date"""
         if not self.is_present_on_day(curr_date):
