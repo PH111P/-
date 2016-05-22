@@ -142,4 +142,5 @@ pip install appoints
 
 ###Examples
 Currently, the following examples can be examined:
-* `appoints-term.py` — Shows upcoming appointments in a terminal using fancy ANSI escapes 
+* `appoints-term.py` — Shows upcoming appointments in a terminal using fancy ANSI escapes
+* `appoints.py` — Powerline segment; Shows current and upcoming appointments and evolves them if necessary.
