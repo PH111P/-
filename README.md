@@ -31,14 +31,14 @@ spec  : special             See the section special for details
 Methods for appoint objects include:
 ```
 is_present( curr_time : datetime ) : boolean
-                            Checks whether the appointment is on the date given through curr_time
+                            Checks whether the appointment is on the date given by curr_time
 is_past( curr_time : datetime ) : boolean     
-                            Checks whether the appointment is before the date given through curr_time
+                            Checks whether the appointment is before the date given by curr_time
 is_future( curr_time : datetime ) : boolean     
-                            Checks whether the appointment is after the date given through curr_time
+                            Checks whether the appointment is after the date given by curr_time
 
 is_present( curr_time : datetime, time_eps : timedelta ) : boolean     
-                            Checks whether the appointment is after the date given through curr_time
+                            Checks whether the appointment is after the date given by curr_time
                               but before the date curr_time + time_eps
 
 evolve( ) : appoint         Generates the next occurance of the appointment or None if there's none
